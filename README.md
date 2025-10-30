@@ -5,6 +5,7 @@ This repository is composed of three layers:
 - **Scrapy + Selenium** (`etf_scraper/`): scrapes ETF data from Yahoo Finance and stores it in MySQL.
 - **Node/Express API** (`backend/`): exposes REST endpoints for the questionnaire, ETF catalog, and recommendation engine.
 - **React client (Create React App)** (`frontend/`): questionnaire + investor dashboard.
+- **Python model helper** (`ml/`): loads `etf_predictor.pkl` to estimate 30‑day upside probability.
 
 ---
 
@@ -52,6 +53,7 @@ Main routes under `/api`:
 - `GET /clients/:id/recommendations` – returns recommended ETFs.
 - `POST /clients/:id/recommendations/refresh` – recomputes recommendations.
 - `GET /etfs` – lists scraped ETFs.
+- `GET /predictions?symbols=SPY,QQQ` – calls the Python helper to score the requested tickers.
 
 ---
 
@@ -82,6 +84,7 @@ Questionnaire answers are normalized (e.g. `risk_tolerance: "medium"`) and persi
 - **Backend**: `curl http://localhost:4000/health` should return `{ "status": "ok" }`.
 - **Frontend**: run through questionnaire; dashboard should display recommendations.
 - **Database**: `SELECT COUNT(*) FROM etfs;` confirms the scraper populated the table.
+- **Model**: make sure Python dependencies (`yfinance`, `ta`, `joblib`, `xgboost`) are installed before hitting `/predictions`.
 
 ---
 

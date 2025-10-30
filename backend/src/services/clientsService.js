@@ -37,9 +37,16 @@ export async function getClientById(clientId) {
     return null;
   }
   const client = rows[0];
-  try {
-    client.sector_preferences = JSON.parse(client.sector_preferences ?? "[]");
-  } catch {
+  const rawPrefs = client.sector_preferences;
+  if (Array.isArray(rawPrefs)) {
+    client.sector_preferences = rawPrefs;
+  } else if (typeof rawPrefs === "string" && rawPrefs.trim().length > 0) {
+    try {
+      client.sector_preferences = JSON.parse(rawPrefs);
+    } catch {
+      client.sector_preferences = [];
+    }
+  } else {
     client.sector_preferences = [];
   }
   return client;

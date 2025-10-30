@@ -34,6 +34,9 @@ function DashboardPage() {
   const [etfs, setEtfs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [predictionMap, setPredictionMap] = useState({});
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  const [predictionError, setPredictionError] = useState(null);
 
   useEffect(() => {
     if (!initialContext?.id) {
@@ -52,8 +55,22 @@ function DashboardPage() {
 
         setClient(clientRes.data);
         setProfile(initialContext.profile);
-        setRecommendations(recoRes.data);
+        const recommendationData = recoRes.data;
+        setRecommendations(recommendationData);
         setEtfs(etfsRes.data);
+
+        const symbols = Array.from(
+          new Set(
+            recommendationData
+              .map((item) => item.etf?.symbol)
+              .filter(Boolean)
+          )
+        );
+        if (symbols.length > 0) {
+          await loadPredictions(symbols);
+        } else {
+          setPredictionMap({});
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -63,6 +80,30 @@ function DashboardPage() {
 
     fetchData();
   }, [initialContext]);
+
+  const loadPredictions = async (symbols) => {
+    setPredictionLoading(true);
+    setPredictionError(null);
+    try {
+      const { data } = await apiClient.get("/predictions", {
+        params: { symbols: symbols.join(",") },
+      });
+      const map = {};
+      data.forEach((item) => {
+        if (typeof item.probability === "number") {
+          map[item.symbol] = item.probability;
+        }
+      });
+      setPredictionMap(map);
+    } catch (error) {
+      console.error(error);
+      setPredictionError(
+        "Impossible de récupérer les probabilités de hausse pour le moment."
+      );
+    } finally {
+      setPredictionLoading(false);
+    }
+  };
 
   const handleRefresh = async () => {
     if (!initialContext?.id) {
@@ -78,6 +119,18 @@ function DashboardPage() {
         "clientRecommendations",
         JSON.stringify(data)
       );
+      const symbols = Array.from(
+        new Set(
+          data
+            .map((item) => item.etf?.symbol)
+            .filter(Boolean)
+        )
+      );
+      if (symbols.length > 0) {
+        await loadPredictions(symbols);
+      } else {
+        setPredictionMap({});
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -142,6 +195,9 @@ function DashboardPage() {
         recommendations={recommendations}
         onRefresh={handleRefresh}
         refreshing={refreshing}
+        predictions={predictionMap}
+        predictionLoading={predictionLoading}
+        predictionError={predictionError}
       />
       <EtfTable etfs={etfs} />
     </section>

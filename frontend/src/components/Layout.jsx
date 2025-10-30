@@ -11,11 +11,12 @@ function Layout({ children }) {
         <nav className="menu">
           <NavLink to="/questionnaire">Questionnaire</NavLink>
           <NavLink to="/dashboard">Tableau de bord</NavLink>
+          <NavLink to="/guide-etf">Comprendre les ETF</NavLink>
         </nav>
       </header>
       <main className="app-main">{children}</main>
       <footer className="app-footer">
-        <small>© {new Date().getFullYear()} ETF Advisor</small>
+        <small>&copy; {new Date().getFullYear()} ETF Advisor</small>
       </footer>
     </div>
   );

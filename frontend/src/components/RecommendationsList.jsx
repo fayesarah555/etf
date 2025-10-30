@@ -1,4 +1,11 @@
-function RecommendationsList({ recommendations = [], onRefresh, refreshing }) {
+function RecommendationsList({
+  recommendations = [],
+  onRefresh,
+  refreshing,
+  predictions = {},
+  predictionLoading = false,
+  predictionError = null,
+}) {
   return (
     <section className="card">
       <header className="card-header">
@@ -14,6 +21,12 @@ function RecommendationsList({ recommendations = [], onRefresh, refreshing }) {
           </button>
         )}
       </header>
+      {predictionLoading && (
+        <p className="muted-text">Calcul des probabilités de hausse...</p>
+      )}
+      {predictionError && (
+        <div className="error-banner">{predictionError}</div>
+      )}
       {recommendations.length === 0 ? (
         <p>Aucune recommandation disponible.</p>
       ) : (
@@ -46,6 +59,14 @@ function RecommendationsList({ recommendations = [], onRefresh, refreshing }) {
                   <dt>Volume</dt>
                   <dd>{Number(item.etf.volume).toLocaleString("fr-FR")}</dd>
                 </div>
+                {typeof predictions[item.etf.symbol] === "number" && (
+                  <div>
+                    <dt>Probabilité 30 j</dt>
+                    <dd>
+                      {(predictions[item.etf.symbol] * 100).toFixed(0)} %
+                    </dd>
+                  </div>
+                )}
               </dl>
               {item.rationale?.triggers && (
                 <div className="rationale">
